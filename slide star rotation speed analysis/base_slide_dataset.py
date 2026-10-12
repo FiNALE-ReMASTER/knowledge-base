@@ -116,9 +116,15 @@ with sqlite3.connect('table_data.sqlite') as conn:
         # print(chart_path.stem)
         # print(song_id)
         chart_bpm = conn.execute("""SELECT bpm FROM song WHERE id = ?;""", (song_id,)).fetchone()
+        
+        chart_constant = conn.execute("""SELECT difficulty_constant FROM chart WHERE song_id = ? AND difficulty_level_id = ?""", (song_id, chart_difficulty)).fetchone()
 
         if chart_bpm:
             chart_bpm = chart_bpm[0]
+        if chart_constant:
+            chart_constant = chart_constant[0]
+        else:
+            chart_constant = 0
 
         with open(chart_path, "r") as f:
             chart_lines = f.readlines()
@@ -138,21 +144,21 @@ with sqlite3.connect('table_data.sqlite') as conn:
                     rows = [SDTRowWithMetadata(whole_measure=row[0], fractional_measure=row[1], duration=row[2], location=row[3],
                                                note_type=row[4],
                                                slide_id=row[5], slide_pattern=row[6], slide_amount=row[7], slide_delay=row[8],
-                                               difficulty=chart_difficulty, bpm=chart_bpm)
+                                               difficulty=chart_difficulty, difficulty_constant=chart_constant, bpm=chart_bpm)
                             for row in chart_component_sets]
 
                 case ".sct":
                     rows = [SDTRowWithMetadata(whole_measure=row[0], fractional_measure=row[1], duration=row[2], location=row[3],
                                                note_type=row[4],
                                                slide_id=row[5], slide_pattern=row[6], slide_amount=row[7], slide_delay=0.25,
-                                               difficulty=chart_difficulty, bpm=chart_bpm)
+                                               difficulty=chart_difficulty, difficulty_constant=chart_constant, bpm=chart_bpm)
                             for row in chart_component_sets]
 
                 case ".szt":
                     rows = [SDTRowWithMetadata(whole_measure=row[0], fractional_measure=row[1], duration=row[2], location=row[3],
                                                note_type=row[4],
                                                slide_id=row[5], slide_pattern=row[6], slide_amount=1, slide_delay=0.25,
-                                               difficulty=chart_difficulty, bpm=chart_bpm)
+                                               difficulty=chart_difficulty, difficulty_constant=chart_constant, bpm=chart_bpm)
                             for row in chart_component_sets]
 
             for potential_star in rows:
@@ -187,6 +193,7 @@ with sqlite3.connect('table_data.sqlite') as conn:
                             slide_delay=slide.slide_delay,
 
                             difficulty=potential_star.difficulty,
+                            difficulty_constant=potential_star.difficulty_constant,
                             bpm=potential_star.bpm
                         ))
 
@@ -198,9 +205,9 @@ with sqlite3.connect('table_data.sqlite') as conn:
 full_df = pd.DataFrame(
     data=[
         [params.star_duration, params.slide_duration, params.slide_delay, params.cw_distance,
-         params.slide_pattern, params.bpm, params.difficulty, params.version]
+         params.slide_pattern, params.bpm, params.difficulty, params.difficulty_constant, params.version]
         for params in slide_params],
-    columns=["star_duration", "slide_duration", "slide_delay", "cw_distance", "pattern_group", "bpm", "difficulty", "version"]
+    columns=["star_duration", "slide_duration", "slide_delay", "cw_distance", "pattern_group", "bpm", "difficulty", "difficulty_constant", "version"]
 )
 # Remove duplicates to find patterns between different configurations over huge groups of identical slide
 pruned_df = full_df.drop_duplicates()

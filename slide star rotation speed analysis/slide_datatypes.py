@@ -61,6 +61,7 @@ class SDTRowWithMetadata(BaseModel):
     slide_delay: float = Field(ge=0)
 
     difficulty: ChartDifficulty
+    difficulty_constant: float = Field(ge=0, le=14)
     bpm: float | None
 
 
@@ -79,4 +80,5 @@ class SlideParams(BaseModel):
     slide_pattern: SlidePattern
     bpm: float | None
     difficulty: ChartDifficulty
+    difficulty_constant: float = Field(ge=0, le=14)
     version: str
