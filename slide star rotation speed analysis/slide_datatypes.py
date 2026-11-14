@@ -63,6 +63,8 @@ class SDTRowWithMetadata(BaseModel):
     difficulty: ChartDifficulty
     difficulty_constant: float = Field(ge=0, le=14)
     bpm: float | None
+    
+    song_id: int
 
 
 class SlideParams(BaseModel):
@@ -82,3 +84,5 @@ class SlideParams(BaseModel):
     difficulty: ChartDifficulty
     difficulty_constant: float = Field(ge=0, le=14)
     version: str
+    
+    song_id: int
